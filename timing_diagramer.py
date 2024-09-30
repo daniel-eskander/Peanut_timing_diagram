@@ -25,10 +25,10 @@ def generate_gantt_diagram(synaptic_sum_time, hw_process_time_ns, number_of_hw_p
     max_time_ns = 0
     hw_first_time_started = [False] * number_of_hw_pbits
 
-    total_idle_time = 0  # Track total system idle time
-    total_hw_idle_time = 0  # Track total hardware idle time
-    total_fpga_idle_time = 0  # Track total FPGA (synaptic calculator) idle time
-    total_updates = number_of_iterations  # Track the total number of updates
+    total_idle_time = 0
+    total_hw_idle_time = 0
+    total_fpga_idle_time = 0
+    total_updates = number_of_iterations
 
     for i in range(number_of_iterations):
         next_sp_start_time_global = last_global_sp_start_time + one_clock_cycle_ns
@@ -47,8 +47,8 @@ def generate_gantt_diagram(synaptic_sum_time, hw_process_time_ns, number_of_hw_p
                 (start_time_synaptic_sum - idle_time_ns_synaptic, synaptic_sum_y_pos_base + sp_pbit * 2), 
                 idle_time_ns_synaptic, 1, color='gray', alpha=0.5)
             ax.add_patch(idle_rect)
-            total_idle_time += idle_time_ns_synaptic  # Accumulate total system idle time
-            total_fpga_idle_time += idle_time_ns_synaptic  # Accumulate FPGA idle time (synaptic calculator)
+            total_idle_time += idle_time_ns_synaptic
+            total_fpga_idle_time += idle_time_ns_synaptic
 
         rect = mpatches.Rectangle(
             (start_time_synaptic_sum, synaptic_sum_y_pos_base + sp_pbit * 2), 
@@ -73,8 +73,8 @@ def generate_gantt_diagram(synaptic_sum_time, hw_process_time_ns, number_of_hw_p
                     (previous_hw_end_time, hw_process_y_pos_base - hw_pbit * 2), 
                     hw_idle_time_ns, 1, color='gray', alpha=0.5)
                 ax.add_patch(hw_idle_rect)
-                total_idle_time += hw_idle_time_ns  # Accumulate total system idle time
-                total_hw_idle_time += hw_idle_time_ns  # Accumulate hardware idle time
+                total_idle_time += hw_idle_time_ns
+                total_hw_idle_time += hw_idle_time_ns
 
         hw_first_time_started[hw_pbit] = True
 
@@ -94,10 +94,9 @@ def generate_gantt_diagram(synaptic_sum_time, hw_process_time_ns, number_of_hw_p
         hw_end_times[hw_pbit] = start_time_hw_process + hw_process_time_ns
         max_time_ns = max(max_time_ns, start_time_hw_process + hw_process_time_ns)
 
-    total_time_ns = max_time_ns  # Total simulation time in nanoseconds
-    avg_update_time_ns = total_time_ns / total_updates  # Average update time in nanoseconds
+    total_time_ns = max_time_ns
+    avg_update_time_ns = total_time_ns / total_updates
 
-    # Print total idle time breakdown
     print(f"Total Time (ns): {total_time_ns}")
     print(f"Total Hardware Idle Time (ns): {total_hw_idle_time}")
     print(f"Total FPGA Idle Time (ns): {total_fpga_idle_time}")
@@ -109,7 +108,6 @@ def generate_gantt_diagram(synaptic_sum_time, hw_process_time_ns, number_of_hw_p
 
     ax.set_xlabel('Time (ns)')
     
-    # Add y-axis labels for logical Pbits and HW Pbits
     for i in range(number_of_logical_pbits):
         ax.text(-100, synaptic_sum_y_pos_base + i * 2 + 0.5, f'Logical_Pbit {i+1}', va='center', ha='right', fontsize=10, color='blue')
 
@@ -121,13 +119,8 @@ def generate_gantt_diagram(synaptic_sum_time, hw_process_time_ns, number_of_hw_p
     ax.text(-50, hw_process_y_pos_base - (number_of_hw_pbits * 2) / 2, 'Hardware', 
         va='center', ha='center', rotation='vertical', fontsize=10)
 
-    # Option to add transparent vertical lines for clock cycles
-    # for tick in range(0, int(max_time_ns), int(one_clock_cycle_ns)):
-    #     ax.axvline(x=tick, color='lightgray', linestyle='--', alpha=0.3)
-
     ax.set_yticks([])
 
-    # Adding a legend
     legend_handles = [
         mpatches.Patch(color='blue', label='FPGA'),
         mpatches.Patch(color='green', label='Hardware'),
